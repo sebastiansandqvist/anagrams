@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Anagrams</title>
+    <style>
+      body {
+        background: #383c4a;
+        color: #fff;
+        font-family: monospace;
+        text-align: center;
+      }
+
+      button {
+        font-family: monospace;
+        font-weight: 400;
+        color: #000;
+      }
+
+      .mR10 {
+        margin-right: 10px;
+      }
+      /* TODO: https://www.color-hex.com/color-palette/36646 */
+
+      .Button {
+        border-radius: 3px;
+        color: #000;
+        cursor: pointer;
+        padding: 15px 20px;
+      }
+
+      /* TODO: do this better */
+      .Guess-placeholder {
+        display: block;
+        height: 55px;
+      }
+
+      .Guess,
+      .Letter-choice {
+        background: #5294e2;
+        border-radius: 3px;
+        color: #000;
+        cursor: pointer;
+        display: inline-block;
+        font-weight: 600;
+        padding: 15px 20px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+      }
+
+      .Guess::last-child,
+      .Letter-choice::last-child {
+        margin-right: 0;
+      }
+
+      .Button[disabled],
+      .Letter-choice[disabled] {
+        background: #7c818c;
+        cursor: default;
+      }
+
+      .Score-board {
+        border-collapse: collapse;
+        margin: 10px auto;
+      }
+
+      .Score-board tr {
+        text-align: left;
+      }
+
+      .Score-board td {
+        border: 1px solid #7c818c;
+        padding: 5px 10px;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="./dictionaries/word-list.js"></script>
+    <script src="./dictionaries/words-6.js"></script>
+    <script src="./dictionaries/words-7.js"></script>
+    <script src="./mithril.js"></script>
+    <script src="./index.js"></script>
+  </body>
+</html>
