@@ -28,6 +28,85 @@ const points: Points = {
   '7': 3400
 }
 
+
+function permutations(letters: string[]) {
+  const permutations: string[] = [];
+
+  const swap = (a: number, b: number, arr: string[]) => {
+    const tmp = arr[a];
+    arr[a] = arr[b];
+    arr[b] = tmp;
+  };
+
+  const generate = (n: number) => {
+    if (n == 1) permutations.push(letters.join(''));
+    else {
+      for (let i = 0; i != n; i++) {
+        generate(n - 1);
+        swap(n % 2 ? 0 : i, n - 1, letters);
+      }
+    }
+  }
+  generate(letters.length);
+  return permutations;
+}
+
+function powerSet(letters: string[]) {
+  const set: string[] = [''];
+  for (let i = 0; i < letters.length; i++) {
+    for (let j = 0, len = set.length; j < len; j++) {
+      set.push(set[j].concat(letters[i]));
+    }
+  }
+  return set;
+}
+
+interface DictSets {
+  '3': Set<string>;
+  '4': Set<string>;
+  '5': Set<string>;
+  '6': Set<string>;
+  '7': Set<string>;
+};
+
+let dictSets: DictSets;
+
+function computeAnswers(baseWord: string) {
+  console.time('dictSet');
+  if (!dictSets) {
+    dictSets = {
+      '3': new Set(wordList[3]),
+      '4': new Set(wordList[4]),
+      '5': new Set(wordList[5]),
+      '6': new Set(wordList[6]),
+      '7': new Set(wordList[7])
+    };
+  }
+  console.timeEnd('dictSet');
+
+  console.time('powerSet');
+  const letters = baseWord.split('');
+  const ps = powerSet(letters).filter((x) => x.length >= 3);
+  console.timeEnd('powerSet');
+
+  const result: string[] = [];
+
+  console.time('permute');
+  for (const s of ps) {
+    for (const permutation of permutations(s.split(''))) {
+      if ((<Set<string>>(<any>dictSets)[permutation.length]).has(permutation)) {
+        result.push(permutation);
+      }
+    }
+  }
+  console.timeEnd('permute');
+
+  // Array.from(new Set(arr)) is a fast? dedupe method
+  return Array.from(new Set(result)).sort((a, b) => {
+    return b.length - a.length || a.localeCompare(b);
+  });
+}
+
 // precondition: the guess string length is valid (3-7)
 // returns number of points for the word
 function computeGuessPoints(guess: string): number {
@@ -67,6 +146,8 @@ const ENDED = 3;
 interface GameState {
   state: number;
   wordLength: number;
+  baseWord: string;
+  dictionary: string[];
   history: string[];
   score: number;
 }
@@ -74,6 +155,8 @@ interface GameState {
 const game: GameState = {
   state: INIT,
   wordLength: 6,
+  baseWord: '',
+  dictionary: [],
   history: [],
   score: 0
 }
@@ -85,9 +168,9 @@ interface Choice {
 
 const Game = () => {
 
-  const goodWords = game.wordLength === 6 ? words6 : words7;
-  const baseWord = randomWord(goodWords);
-  const boardLetters: Choice[] = shuffle(baseWord).split('').map((letter) => ({ letter, guessed: false }));
+  game.dictionary = game.wordLength === 6 ? words6 : words7;
+  game.baseWord = randomWord(game.dictionary);
+  const boardLetters: Choice[] = shuffle(game.baseWord).split('').map((letter) => ({ letter, guessed: false }));
   const guess: Choice[] = [];
   let secondsRemaining = 60;
 
@@ -146,7 +229,7 @@ const Game = () => {
   window.addEventListener('keypress', onKeyPress);
   window.addEventListener('keydown', onKeyDown);
 
-  console.log({ baseWord, boardLetters });
+  console.log({ baseWord: game.baseWord, boardLetters });
 
   const interval = setInterval(() => {
     secondsRemaining--;
@@ -188,23 +271,50 @@ const Game = () => {
         m('button.Button', {
           disabled: guess.length < 3,
           onclick: submitGuess
-        }, 'add guess')
+        }, 'add guess'), // TODO: get a good enter symbol icon svg
       ];
     }
   };
 };
 
 const GameOver = () => {
+
+  const gameEndedTime = Date.now();
+  let answers: string[] = [];
   game.history.sort((a, b) => b.length - a.length);
 
-  const newGame = () => {
+  const startOver = () => {
     game.state = INIT;
     game.score = 0;
     game.history.length = 0;
     redraw();
   };
 
+  const showAllAnswers = () => {
+    console.time('compute');
+    answers = computeAnswers(game.baseWord);
+    console.timeEnd('compute');
+    console.log(answers);
+    redraw();
+  };
+
+  const onKeyPress = (e: KeyboardEvent) => {
+    if (e.key === 'a') return showAllAnswers();
+    if (e.key === 'n') {
+      // prevent accidental restarts that could occur
+      // if the player attempted to type "n" as a letter
+      // during a guess in the final moment of the game
+      if (Date.now() - gameEndedTime > 1000)
+        return startOver();
+    }
+  };
+
+  window.addEventListener('keypress', onKeyPress);
+
   return {
+    onremove() {
+      window.removeEventListener('keypress', onKeyPress);
+    },
     view() {
       return [
         m('.Score', 'Score: ', game.score),
@@ -216,34 +326,67 @@ const GameOver = () => {
             )
           ))
         ),
-        m('button.Button', {
-          onclick: newGame
-        }, 'new game')
+        answers.length > 0 ? (
+          m('table.Score-board',
+            answers.map((word) => (
+              m('tr',
+                m('td', {
+                  class: game.history.indexOf(word) !== -1 ? 'highlight' : ''
+                }, word),
+                m('td', computeGuessPoints(word)) // TODO: don't need to re-compute these here if they're saved in history
+              )
+            ))
+          )
+        ) : null,
+        m('button.Button.mR10', {
+          onclick: startOver
+        }, m('u', 'n'), 'ew game'),
+        answers.length === 0 ? (
+          m('button.Button.mR10', {
+            onclick: showAllAnswers
+          }, 'show all ', m('u', 'a'), 'nswers')
+        ) : null
       ];
     }
   };
 };
 
-const GameSettings = {
-  view() {
-    return [
-      m('button.Button.mR10', {
-        onclick() {
-          game.wordLength = 6;
-          game.state = STARTED;
-          redraw();
-        }
-      }, '6 letters'),
-      m('button.Button', {
-        onclick() {
-          game.wordLength = 6;
-          game.state = STARTED;
-          redraw();
-        }
-      }, '7 letters')
-    ];
+const GameSettings = () => {
+
+  const newGame = (wordLength: number) => {
+    game.wordLength = wordLength;
+    game.state = STARTED;
+    redraw();
   }
-}
+
+  const onKeyPress = (e: KeyboardEvent) => {
+    console.log(e.key);
+    if (e.key === '6') return newGame(6);
+    if (e.key === '7') return newGame(7);
+  };
+
+  window.addEventListener('keypress', onKeyPress);
+
+  return {
+    onremove() {
+      window.removeEventListener('keypress', onKeyPress);
+    },
+    view() {
+      return [
+        m('button.Button.mR10', {
+          onclick() {
+            newGame(6);
+          }
+        }, m('u', '6'), ' letters'),
+        m('button.Button', {
+          onclick() {
+            newGame(7);
+          }
+        }, m('u', '7'), ' letters')
+      ];
+    }
+  };
+};
 
 const App = {
   view() {

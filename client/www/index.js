@@ -9,6 +9,69 @@
       '6': 2000,
       '7': 3400
   };
+  function permutations(letters) {
+      var permutations = [];
+      var swap = function (a, b, arr) {
+          var tmp = arr[a];
+          arr[a] = arr[b];
+          arr[b] = tmp;
+      };
+      var generate = function (n) {
+          if (n == 1)
+              permutations.push(letters.join(''));
+          else {
+              for (var i = 0; i != n; i++) {
+                  generate(n - 1);
+                  swap(n % 2 ? 0 : i, n - 1, letters);
+              }
+          }
+      };
+      generate(letters.length);
+      return permutations;
+  }
+  function powerSet(letters) {
+      var set = [''];
+      for (var i = 0; i < letters.length; i++) {
+          for (var j = 0, len = set.length; j < len; j++) {
+              set.push(set[j].concat(letters[i]));
+          }
+      }
+      return set;
+  }
+  var dictSets;
+  function computeAnswers(baseWord) {
+      console.time('dictSet');
+      if (!dictSets) {
+          dictSets = {
+              '3': new Set(wordList[3]),
+              '4': new Set(wordList[4]),
+              '5': new Set(wordList[5]),
+              '6': new Set(wordList[6]),
+              '7': new Set(wordList[7])
+          };
+      }
+      console.timeEnd('dictSet');
+      console.time('powerSet');
+      var letters = baseWord.split('');
+      var ps = powerSet(letters).filter(function (x) { return x.length >= 3; });
+      console.timeEnd('powerSet');
+      var result = [];
+      console.time('permute');
+      for (var _i = 0, ps_1 = ps; _i < ps_1.length; _i++) {
+          var s = ps_1[_i];
+          for (var _a = 0, _b = permutations(s.split('')); _a < _b.length; _a++) {
+              var permutation = _b[_a];
+              if (dictSets[permutation.length].has(permutation)) {
+                  result.push(permutation);
+              }
+          }
+      }
+      console.timeEnd('permute');
+      // Array.from(new Set(arr)) is a fast? dedupe method
+      return Array.from(new Set(result)).sort(function (a, b) {
+          return b.length - a.length || a.localeCompare(b);
+      });
+  }
   // precondition: the guess string length is valid (3-7)
   // returns number of points for the word
   function computeGuessPoints(guess) {
@@ -43,13 +106,15 @@
   var game = {
       state: INIT,
       wordLength: 6,
+      baseWord: '',
+      dictionary: [],
       history: [],
       score: 0
   };
   var Game = function () {
-      var goodWords = game.wordLength === 6 ? words6 : words7;
-      var baseWord = randomWord(goodWords);
-      var boardLetters = shuffle(baseWord).split('').map(function (letter) { return ({ letter: letter, guessed: false }); });
+      game.dictionary = game.wordLength === 6 ? words6 : words7;
+      game.baseWord = randomWord(game.dictionary);
+      var boardLetters = shuffle(game.baseWord).split('').map(function (letter) { return ({ letter: letter, guessed: false }); });
       var guess = [];
       var secondsRemaining = 60;
       var addGuess = function (x) {
@@ -105,7 +170,7 @@
       };
       window.addEventListener('keypress', onKeyPress);
       window.addEventListener('keydown', onKeyDown);
-      console.log({ baseWord: baseWord, boardLetters: boardLetters });
+      console.log({ baseWord: game.baseWord, boardLetters: boardLetters });
       var interval = setInterval(function () {
           secondsRemaining--;
           if (secondsRemaining === 0) {
@@ -136,51 +201,96 @@
                   m('button.Button', {
                       disabled: guess.length < 3,
                       onclick: submitGuess
-                  }, 'add guess')
+                  }, 'add guess'),
               ];
           }
       };
   };
   var GameOver = function () {
+      var gameEndedTime = Date.now();
+      var answers = [];
       game.history.sort(function (a, b) { return b.length - a.length; });
-      var newGame = function () {
+      var startOver = function () {
           game.state = INIT;
           game.score = 0;
           game.history.length = 0;
           redraw();
       };
+      var showAllAnswers = function () {
+          console.time('compute');
+          answers = computeAnswers(game.baseWord);
+          console.timeEnd('compute');
+          console.log(answers);
+          redraw();
+      };
+      var onKeyPress = function (e) {
+          if (e.key === 'a')
+              return showAllAnswers();
+          if (e.key === 'n') {
+              // prevent accidental restarts that could occur
+              // if the player attempted to type "n" as a letter
+              // during a guess in the final moment of the game
+              if (Date.now() - gameEndedTime > 1000)
+                  return startOver();
+          }
+      };
+      window.addEventListener('keypress', onKeyPress);
       return {
+          onremove: function () {
+              window.removeEventListener('keypress', onKeyPress);
+          },
           view: function () {
               return [
                   m('.Score', 'Score: ', game.score),
                   m('table.Score-board', game.history.map(function (word) { return (m('tr', m('td', word), m('td', computeGuessPoints(word)) // TODO: don't need to re-compute these here if they're saved in history
                   )); })),
-                  m('button.Button', {
-                      onclick: newGame
-                  }, 'new game')
+                  answers.length > 0 ? (m('table.Score-board', answers.map(function (word) { return (m('tr', m('td', {
+                      class: game.history.indexOf(word) !== -1 ? 'highlight' : ''
+                  }, word), m('td', computeGuessPoints(word)) // TODO: don't need to re-compute these here if they're saved in history
+                  )); }))) : null,
+                  m('button.Button.mR10', {
+                      onclick: startOver
+                  }, m('u', 'n'), 'ew game'),
+                  answers.length === 0 ? (m('button.Button.mR10', {
+                      onclick: showAllAnswers
+                  }, 'show all ', m('u', 'a'), 'nswers')) : null
               ];
           }
       };
   };
-  var GameSettings = {
-      view: function () {
-          return [
-              m('button.Button.mR10', {
-                  onclick: function () {
-                      game.wordLength = 6;
-                      game.state = STARTED;
-                      redraw();
-                  }
-              }, '6 letters'),
-              m('button.Button', {
-                  onclick: function () {
-                      game.wordLength = 6;
-                      game.state = STARTED;
-                      redraw();
-                  }
-              }, '7 letters')
-          ];
-      }
+  var GameSettings = function () {
+      var newGame = function (wordLength) {
+          game.wordLength = wordLength;
+          game.state = STARTED;
+          redraw();
+      };
+      var onKeyPress = function (e) {
+          console.log(e.key);
+          if (e.key === '6')
+              return newGame(6);
+          if (e.key === '7')
+              return newGame(7);
+      };
+      window.addEventListener('keypress', onKeyPress);
+      return {
+          onremove: function () {
+              window.removeEventListener('keypress', onKeyPress);
+          },
+          view: function () {
+              return [
+                  m('button.Button.mR10', {
+                      onclick: function () {
+                          newGame(6);
+                      }
+                  }, m('u', '6'), ' letters'),
+                  m('button.Button', {
+                      onclick: function () {
+                          newGame(7);
+                      }
+                  }, m('u', '7'), ' letters')
+              ];
+          }
+      };
   };
   var App = {
       view: function () {

@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>Anagrams</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
       body {
         background: #383c4a;
@@ -19,11 +20,12 @@
       .mR10 {
         margin-right: 10px;
       }
-      /* TODO: https://www.color-hex.com/color-palette/36646 */
+      /* TODO:  */
 
       .Button {
+        background: #ecf0f1;
+        border: 1px solid #ecf0f1;
         border-radius: 3px;
-        color: #000;
         cursor: pointer;
         padding: 15px 20px;
       }
@@ -36,7 +38,8 @@
 
       .Guess,
       .Letter-choice {
-        background: #5294e2;
+        background: #f1c40f;
+        border: 1px solid #f39c12;
         border-radius: 3px;
         color: #000;
         cursor: pointer;
@@ -55,7 +58,8 @@
 
       .Button[disabled],
       .Letter-choice[disabled] {
-        background: #7c818c;
+        background: #95a5a6;
+        border: 1px solid #bdc3c7;
         cursor: default;
       }
 
@@ -71,6 +75,11 @@
       .Score-board td {
         border: 1px solid #7c818c;
         padding: 5px 10px;
+      }
+
+      .highlight {
+        background: yellow;
+        color: #000;
       }
 
     </style>
