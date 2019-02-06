@@ -1,5 +1,3 @@
-console.log({ wordList, words6, words7 });
-
 interface Option {
   label: string;
   checked: boolean;
@@ -28,15 +26,14 @@ const points: Points = {
   '7': 3400
 }
 
+function swap(a: number, b: number, arr: string[]) {
+  const tmp = arr[a];
+  arr[a] = arr[b];
+  arr[b] = tmp;
+};
 
 function permutations(letters: string[]) {
   const permutations: string[] = [];
-
-  const swap = (a: number, b: number, arr: string[]) => {
-    const tmp = arr[a];
-    arr[a] = arr[b];
-    arr[b] = tmp;
-  };
 
   const generate = (n: number) => {
     if (n == 1) permutations.push(letters.join(''));
@@ -47,12 +44,13 @@ function permutations(letters: string[]) {
       }
     }
   }
+
   generate(letters.length);
   return permutations;
 }
 
 function powerSet(letters: string[]) {
-  const set: string[] = [''];
+  const set: string[][] = [[]];
   for (let i = 0; i < letters.length; i++) {
     for (let j = 0, len = set.length; j < len; j++) {
       set.push(set[j].concat(letters[i]));
@@ -93,7 +91,7 @@ function computeAnswers(baseWord: string) {
 
   console.time('permute');
   for (const s of ps) {
-    for (const permutation of permutations(s.split(''))) {
+    for (const permutation of permutations(s)) {
       if ((<Set<string>>(<any>dictSets)[permutation.length]).has(permutation)) {
         result.push(permutation);
       }
@@ -294,7 +292,6 @@ const GameOver = () => {
     console.time('compute');
     answers = computeAnswers(game.baseWord);
     console.timeEnd('compute');
-    console.log(answers);
     redraw();
   };
 
@@ -360,7 +357,6 @@ const GameSettings = () => {
   }
 
   const onKeyPress = (e: KeyboardEvent) => {
-    console.log(e.key);
     if (e.key === '6') return newGame(6);
     if (e.key === '7') return newGame(7);
   };
@@ -399,9 +395,9 @@ const App = {
 const mountNode = document.getElementById('app');
 
 function redraw() {
-  // console.time('render');
+  console.time('render');
   m.render(<Element>mountNode, m(App));
-  // console.timeEnd('render');
+  console.timeEnd('render');
 }
 
 redraw();

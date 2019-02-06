@@ -1,7 +1,6 @@
 (function () {
   'use strict';
 
-  console.log({ wordList: wordList, words6: words6, words7: words7 });
   var points = {
       '3': 100,
       '4': 400,
@@ -9,13 +8,13 @@
       '6': 2000,
       '7': 3400
   };
+  function swap(a, b, arr) {
+      var tmp = arr[a];
+      arr[a] = arr[b];
+      arr[b] = tmp;
+  }
   function permutations(letters) {
       var permutations = [];
-      var swap = function (a, b, arr) {
-          var tmp = arr[a];
-          arr[a] = arr[b];
-          arr[b] = tmp;
-      };
       var generate = function (n) {
           if (n == 1)
               permutations.push(letters.join(''));
@@ -30,7 +29,7 @@
       return permutations;
   }
   function powerSet(letters) {
-      var set = [''];
+      var set = [[]];
       for (var i = 0; i < letters.length; i++) {
           for (var j = 0, len = set.length; j < len; j++) {
               set.push(set[j].concat(letters[i]));
@@ -59,7 +58,7 @@
       console.time('permute');
       for (var _i = 0, ps_1 = ps; _i < ps_1.length; _i++) {
           var s = ps_1[_i];
-          for (var _a = 0, _b = permutations(s.split('')); _a < _b.length; _a++) {
+          for (var _a = 0, _b = permutations(s); _a < _b.length; _a++) {
               var permutation = _b[_a];
               if (dictSets[permutation.length].has(permutation)) {
                   result.push(permutation);
@@ -220,7 +219,6 @@
           console.time('compute');
           answers = computeAnswers(game.baseWord);
           console.timeEnd('compute');
-          console.log(answers);
           redraw();
       };
       var onKeyPress = function (e) {
@@ -265,7 +263,6 @@
           redraw();
       };
       var onKeyPress = function (e) {
-          console.log(e.key);
           if (e.key === '6')
               return newGame(6);
           if (e.key === '7')
@@ -304,9 +301,9 @@
   };
   var mountNode = document.getElementById('app');
   function redraw() {
-      // console.time('render');
+      console.time('render');
       m.render(mountNode, m(App));
-      // console.timeEnd('render');
+      console.timeEnd('render');
   }
   redraw();
 
