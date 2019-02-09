@@ -126,9 +126,7 @@
               return;
           var guessWord = guess.map(function (x) { return x.letter; }).join('');
           if (game.history.indexOf(guessWord) === -1) {
-              // console.time('compute guess points');
               var points_1 = computeGuessPoints(guessWord);
-              // console.timeEnd('compute guess points');
               if (points_1 === 0) {
                   alert('nope!');
               }
@@ -164,8 +162,11 @@
           }
       };
       var onKeyDown = function (e) {
-          if (e.key === 'Backspace')
+          if (e.key === 'Backspace') {
+              e.preventDefault();
+              e.stopPropagation();
               return removeGuess(guess.length - 1);
+          }
       };
       window.addEventListener('keypress', onKeyPress);
       window.addEventListener('keydown', onKeyDown);

@@ -182,9 +182,7 @@ const Game = () => {
     if (guess.length < 3) return;
     const guessWord = guess.map((x) => x.letter).join('');
     if (game.history.indexOf(guessWord) === -1) {
-      // console.time('compute guess points');
       const points = computeGuessPoints(guessWord);
-      // console.timeEnd('compute guess points');
       if (points === 0) {
         alert('nope!');
       }
@@ -221,7 +219,11 @@ const Game = () => {
   };
 
   const onKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Backspace') return removeGuess(guess.length - 1);
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      e.stopPropagation();
+      return removeGuess(guess.length - 1);
+    }
   };
 
   window.addEventListener('keypress', onKeyPress);
