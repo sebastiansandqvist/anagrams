@@ -246,13 +246,13 @@
                   m('.Score', 'Score: ', game.score),
                   m('table.Score-board', game.history.map(function (word) { return (m('tr', m('td', word), m('td', computeGuessPoints(word)) // TODO: don't need to re-compute these here if they're saved in history
                   )); })),
-                  m('button.Button', {
-                      class: answers.length === 0 ? 'mR10' : '',
+                  m('button.Button.mR10', {
                       onclick: startOver
                   }, m('u', 'n'), 'ew game'),
-                  answers.length === 0 ? (m('button.Button.mR10', {
+                  m('button.Button', {
+                      disabled: answers.length !== 0,
                       onclick: showAllAnswers
-                  }, 'show all ', m('u', 'a'), 'nswers')) : null,
+                  }, 'show all ', m('u', 'a'), 'nswers'),
                   answers.length > 0 ? (m('table.Score-board', answers.map(function (word) { return (m('tr', m('td', {
                       class: game.history.indexOf(word) !== -1 ? 'highlight' : ''
                   }, word), m('td', computeGuessPoints(word)) // TODO: don't need to re-compute these here if they're saved in history

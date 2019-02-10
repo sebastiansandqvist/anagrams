@@ -330,14 +330,13 @@ const GameOver = () => {
             )
           ))
         ),
-        m('button.Button', {
-          class: answers.length === 0 ? 'mR10' : '',
+        m('button.Button.mR10', {
           onclick: startOver
         }, m('u', 'n'), 'ew game'),
-        m('button.Button.mR10', {
-          disabled: answers.length === 0,
+        m('button.Button', {
+          disabled: answers.length !== 0,
           onclick: showAllAnswers
-        }, 'show all ', m('u', 'a'), 'nswers')
+        }, 'show all ', m('u', 'a'), 'nswers'),
         answers.length > 0 ? (
           m('table.Score-board',
             answers.map((word) => (
