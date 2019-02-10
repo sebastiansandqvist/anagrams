@@ -190,8 +190,8 @@
                   guessPlaceholders.push(m('button.Guess-placeholder[disabled]', '_'));
               }
               return [
-                  m('.Time', 'time: ', secondsRemaining),
-                  m('.Score', 'score: ', game.score),
+                  m('', 'time: ', secondsRemaining),
+                  m('', 'score: ', game.score),
                   m('br'),
                   m('', guess.map(function (x, i) { return (m('button.Guess', {
                       onclick: function () { return removeGuess(i); }
@@ -280,6 +280,7 @@
           },
           view: function () {
               return [
+                  m('.mB10', 'anagrams'),
                   m('button.Button.mR10', {
                       onclick: function () {
                           newGame(6);

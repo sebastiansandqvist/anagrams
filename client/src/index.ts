@@ -253,8 +253,8 @@ const Game = () => {
       }
 
       return [
-        m('.Time', 'time: ', secondsRemaining),
-        m('.Score', 'score: ', game.score),
+        m('', 'time: ', secondsRemaining),
+        m('', 'score: ', game.score),
         m('br'),
         m('',
           guess.map((x, i) => (
@@ -375,6 +375,7 @@ const GameSettings = () => {
     },
     view() {
       return [
+        m('.mB10', 'anagrams'),
         m('button.Button.mR10', {
           onclick() {
             newGame(6);
