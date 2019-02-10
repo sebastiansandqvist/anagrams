@@ -164,7 +164,6 @@
       var onKeyDown = function (e) {
           if (e.key === 'Backspace') {
               e.preventDefault();
-              e.stopPropagation();
               return removeGuess(guess.length - 1);
           }
       };
@@ -186,13 +185,17 @@
               window.removeEventListener('keydown', onKeyDown);
           },
           view: function () {
+              var guessPlaceholders = [];
+              for (var i = guess.length; i < game.wordLength; i++) {
+                  guessPlaceholders.push(m('button.Guess-placeholder[disabled]', '_'));
+              }
               return [
                   m('.Time', 'time: ', secondsRemaining),
                   m('.Score', 'score: ', game.score),
                   m('br'),
-                  m('', guess.length === 0 ? m('.Guess-placeholder') : null, guess.map(function (x, i) { return (m('button.Guess', {
+                  m('', guess.map(function (x, i) { return (m('button.Guess', {
                       onclick: function () { return removeGuess(i); }
-                  }, x.letter)); })),
+                  }, x.letter)); }), guessPlaceholders),
                   m('', boardLetters.map(function (x) { return (m('button.Letter-choice', {
                       disabled: x.guessed,
                       onclick: function () { return addGuess(x); }
@@ -243,16 +246,17 @@
                   m('.Score', 'Score: ', game.score),
                   m('table.Score-board', game.history.map(function (word) { return (m('tr', m('td', word), m('td', computeGuessPoints(word)) // TODO: don't need to re-compute these here if they're saved in history
                   )); })),
-                  answers.length > 0 ? (m('table.Score-board', answers.map(function (word) { return (m('tr', m('td', {
-                      class: game.history.indexOf(word) !== -1 ? 'highlight' : ''
-                  }, word), m('td', computeGuessPoints(word)) // TODO: don't need to re-compute these here if they're saved in history
-                  )); }))) : null,
-                  m('button.Button.mR10', {
+                  m('button.Button', {
+                      class: answers.length === 0 ? 'mR10' : '',
                       onclick: startOver
                   }, m('u', 'n'), 'ew game'),
                   answers.length === 0 ? (m('button.Button.mR10', {
                       onclick: showAllAnswers
-                  }, 'show all ', m('u', 'a'), 'nswers')) : null
+                  }, 'show all ', m('u', 'a'), 'nswers')) : null,
+                  answers.length > 0 ? (m('table.Score-board', answers.map(function (word) { return (m('tr', m('td', {
+                      class: game.history.indexOf(word) !== -1 ? 'highlight' : ''
+                  }, word), m('td', computeGuessPoints(word)) // TODO: don't need to re-compute these here if they're saved in history
+                  )); }))) : null
               ];
           }
       };

@@ -221,7 +221,6 @@ const Game = () => {
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Backspace') {
       e.preventDefault();
-      e.stopPropagation();
       return removeGuess(guess.length - 1);
     }
   };
@@ -247,17 +246,23 @@ const Game = () => {
       window.removeEventListener('keydown', onKeyDown);
     },
     view() {
+
+      const guessPlaceholders = [];
+      for (let i = guess.length; i < game.wordLength; i++) {
+        guessPlaceholders.push(m('button.Guess-placeholder[disabled]', '_'));
+      }
+
       return [
         m('.Time', 'time: ', secondsRemaining),
         m('.Score', 'score: ', game.score),
         m('br'),
         m('',
-          guess.length === 0 ? m('.Guess-placeholder') : null,
           guess.map((x, i) => (
             m('button.Guess', {
               onclick: () => removeGuess(i)
             }, x.letter)
-          ))
+          )),
+          guessPlaceholders,
         ),
         m('',
           boardLetters.map((x) => (
@@ -325,6 +330,14 @@ const GameOver = () => {
             )
           ))
         ),
+        m('button.Button', {
+          class: answers.length === 0 ? 'mR10' : '',
+          onclick: startOver
+        }, m('u', 'n'), 'ew game'),
+        m('button.Button.mR10', {
+          disabled: answers.length === 0,
+          onclick: showAllAnswers
+        }, 'show all ', m('u', 'a'), 'nswers')
         answers.length > 0 ? (
           m('table.Score-board',
             answers.map((word) => (
@@ -336,14 +349,6 @@ const GameOver = () => {
               )
             ))
           )
-        ) : null,
-        m('button.Button.mR10', {
-          onclick: startOver
-        }, m('u', 'n'), 'ew game'),
-        answers.length === 0 ? (
-          m('button.Button.mR10', {
-            onclick: showAllAnswers
-          }, 'show all ', m('u', 'a'), 'nswers')
         ) : null
       ];
     }

@@ -2,22 +2,23 @@
 <html>
   <head>
     <title>Anagrams</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
       body {
         background: #383c4a;
         color: #fff;
         font-family: monospace;
         font-size: 16px;
-        margin: 20px;
+        margin-top: 20px;
         text-align: center;
+        touch-action: manipulation;
       }
 
       button {
+        color: #000;
         font-family: monospace;
         font-size: 16px;
         font-weight: 400;
-        color: #000;
       }
 
       .mR10 {
@@ -33,13 +34,8 @@
         padding: 15px 20px;
       }
 
-      /* TODO: do this better */
-      .Guess-placeholder {
-        display: block;
-        height: 55px;
-      }
-
       .Guess,
+      .Guess-placeholder,
       .Letter-choice {
         background: #f1c40f;
         border: 1px solid #f39c12;
@@ -48,10 +44,11 @@
         cursor: pointer;
         display: inline-block;
         font-weight: 600;
-        padding: 15px 20px;
+        height: 50px;
         margin-right: 10px;
         margin-bottom: 10px;
         text-transform: uppercase;
+        width: 50px;
       }
 
       .Guess::last-child,
@@ -59,11 +56,18 @@
         margin-right: 0;
       }
 
+      .Guess-placeholder,
       .Button[disabled],
       .Letter-choice[disabled] {
         background: #95a5a6;
         border: 1px solid #bdc3c7;
+        color: #404552;
         cursor: default;
+      }
+
+      .Guess-placeholder {
+        opacity: 0.5;
+        color: #95a5a6;
       }
 
       .Score-board {
